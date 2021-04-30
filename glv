@@ -32,30 +32,30 @@ RedHat/CentOS: yum install git
     fi
     if ! [[ $(command -v go) ]]; then
       curl -LO https://golang.org/dl/${remote_goversion}.${currenttype}.tar.gz
-	    sudo tar -C /usr/local -zxf ${remote_goversion}.${currenttype}.tar.gz
+      sudo tar -C /usr/local -zxf ${remote_goversion}.${currenttype}.tar.gz
       rm ${remote_goversion}.${currenttype}.tar.gz
       export PATH=$PATH:/usr/local/go/bin
       echo -e "Golang installed" && exit 1
     else
       local_goversion=$(go version | awk '{print $3}')
     	if [[ "${local_goversion}" = "${remote_goversion}" ]]; then 
-	      echo -e "The latest version ${local_goversion} is already installed on your system" && exit 1
-      else
-        echo -e "Local version: ${local_goversion}"
-        echo -e "Latest version: ${remote_goversion}"
-        read -p "Do you want to update? (y/N): " yN
-        if [[ "${yN}" = "y" ]]; then
-          if [ -d "/usr/local/go" ]; then
-            curl -LO https://golang.org/dl/${remote_goversion}.${currenttype}.tar.gz
-            sudo mv /usr/local/go /usr/local/${local_goversion}
-            sudo tar -C /usr/local -zxf ${remote_goversion}.${currenttype}.tar.gz
-            rm ${remote_goversion}.${currenttype}.tar.gz
-            export PATH=$PATH:/usr/local/go/bin
-            echo -e "Golang updated" && exit 1
-          fi
+	  echo -e "The latest version ${local_goversion} is already installed on your system" && exit 1
         else
-          echo -e "Golang update cancelled" && exit 1
-        fi
+          echo -e "Local version: ${local_goversion}"
+          echo -e "Latest version: ${remote_goversion}"
+          read -p "Do you want to update? (y/N): " yN
+          if [[ "${yN}" = "y" ]]; then
+            if [ -d "/usr/local/go" ]; then
+              curl -LO https://golang.org/dl/${remote_goversion}.${currenttype}.tar.gz
+              sudo mv /usr/local/go /usr/local/${local_goversion}
+              sudo tar -C /usr/local -zxf ${remote_goversion}.${currenttype}.tar.gz
+              rm ${remote_goversion}.${currenttype}.tar.gz
+              export PATH=$PATH:/usr/local/go/bin
+              echo -e "Golang updated" && exit 1
+            fi
+          else
+            echo -e "Golang update cancelled" && exit 1
+          fi
     	fi
     fi 
   else
