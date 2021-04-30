@@ -35,7 +35,7 @@ RedHat/CentOS: yum install git
 	    sudo tar -C /usr/local -zxf ${remote_goversion}.${currenttype}.tar.gz
       rm ${remote_goversion}.${currenttype}.tar.gz
       export PATH=$PATH:/usr/local/go/bin
-      echo -e "Installed and it is recommended to restart your Terminal" && exit 1
+      echo -e "Golang installed" && exit 1
     else
       local_goversion=$(go version | awk '{print $3}')
     	if [[ "${local_goversion}" = "${remote_goversion}" ]]; then 
@@ -51,16 +51,16 @@ RedHat/CentOS: yum install git
             sudo tar -C /usr/local -zxf ${remote_goversion}.${currenttype}.tar.gz
             rm ${remote_goversion}.${currenttype}.tar.gz
             export PATH=$PATH:/usr/local/go/bin
-            echo -e "Updated and it is recommended to restart your Terminal" && exit 1
+            echo -e "Golang updated" && exit 1
           fi
         else
-          echo -e "Update cancelled, bye" && exit 1
+          echo -e "Golang update cancelled" && exit 1
         fi
     	fi
     fi 
   else
     cp glv /usr/local/bin/glv
-    echo -e "Installed, just run \`sudo glv\`" && exit 1
+    echo -e "glv installed, just run \`sudo glv\`" && exit 1
   fi
 }
 
