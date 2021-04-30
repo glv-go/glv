@@ -17,16 +17,18 @@ RedHat/CentOS: yum install git
 ************************************" && exit 1
     fi
     remote_goversion=`git ls-remote --tags https://github.com/golang/go.git | awk '{print $2}' | awk -F"/" '{print $3}' | grep -v "weekly\|rc\|beta\|release" | sort -n -t "." -k2 -k3 | tail -n 1`
-    if [[ "$(uname)"=="Darwin" ]] ;then
+    if [[ "$(uname)" = "Darwin" ]] ;then
       currenttype="darwin-amd64"
-    elif [[ "$(uname)"=="Linux" ]]; then
-      if [[ "$(getconf LONG_BIT)"=="64" ]]; then
+    elif [[ "$(uname)" = "Linux" ]]; then
+      if [[ "$(getconf LONG_BIT)" = "64" ]]; then
         currenttype="linux-amd64"
       else
         currenttype="linux-386"
       fi
-    elif [[ "$(uname)"=="MINGW32_NT" ]]; then
+    elif [[ "$(uname)" = "MINGW32_NT" ]]; then
       echo -e "Please go to https://golang.org/dl/" && exit 1
+    else
+      echo -e "System unsupported" && exit 1
     fi
     if ! [[ $(command -v go) ]]; then
       curl -LO https://golang.org/dl/${remote_goversion}.${currenttype}.tar.gz
