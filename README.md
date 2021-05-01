@@ -11,7 +11,7 @@ sudo chmod +x /usr/local/bin/glv
 
 ### How to use
 
-Run command `sudo glv`, that's all.
+Run command `glv`, that's all.
 
 ### How to Collaborate
 
