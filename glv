@@ -34,8 +34,16 @@ RedHat/CentOS: yum install git
       curl -LO https://golang.org/dl/${remote_goversion}.${currenttype}.tar.gz
       sudo tar -C /usr/local -zxf ${remote_goversion}.${currenttype}.tar.gz
       rm ${remote_goversion}.${currenttype}.tar.gz
-      export PATH=$PATH:/usr/local/go/bin
-      echo -e "Golang installed" && exit 1
+      EXPORTSCRITP="export PATH=\$PATH:/usr/local/go/bin"
+      if [[ "$(ps -p $PPID -o comm=)" == "-zsh" ]]; then
+        echo "${EXPORTSCRITP}">>~/.zshrc
+        echo -e "Golang installed, it is recommended to reopen the terminal" && exit 1
+      elif [ "$(ps -p $PPID -o comm=)" == "bash" ]; then
+        echo "${EXPORTSCRITP}">>~/.bashrc
+        echo -e "Golang installed, it is recommended to reopen the terminal" && exit 1
+      else
+        echo -e "Golang installed, append the following to your shell profile\\nexport PATH=\$PATH:/usr/local/go/bin" && exit 1
+      fi
     else
       local_goversion=$(go version | awk '{print $3}')
     	if [[ "${local_goversion}" = "${remote_goversion}" ]]; then 
@@ -60,7 +68,7 @@ RedHat/CentOS: yum install git
     fi 
   else
     cp glv /usr/local/bin/glv
-    echo -e "glv installed, just run \`sudo glv\`" && exit 1
+    echo -e "glv installed, just run \`glv\`" && exit 1
   fi
 }
 
