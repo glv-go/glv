@@ -5,8 +5,7 @@ Golang Latest Version
 ### Install
 
 ```
-sudo curl https://raw.githubusercontent.com/tourcoder/glv/master/glv -o /usr/local/bin/glv
-sudo chmod +x /usr/local/bin/glv
+sudo curl https://raw.githubusercontent.com/tourcoder/glv/master/glv -o /usr/local/bin/glv && sudo chmod +x /usr/local/bin/glv
 ```
 
 ### How to use
