@@ -42,7 +42,6 @@ golang_version_file() {
 }
 
 export_path_to_current_shell() {
-  #获取当前的shell的配置文件，并将环境变量添加到配置文件中
   local EXPORTSCRITP="export PATH=\$PATH:/usr/local/go/bin"
   local currentshell=$(ps -p $PPID -o comm=)
   if [ "${currentshell}" == "-zsh" -o "${currentshell}" == "zsh" ]; then
