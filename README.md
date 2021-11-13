@@ -5,14 +5,19 @@ Golang Latest Version
 ### Install
 
 ```
-sudo curl https://raw.githubusercontent.com/tourcoder/glv/master/glv -o /usr/local/bin/glv && sudo chmod +x /usr/local/bin/glv
+curl https://raw.githubusercontent.com/tourcoder/glv/master/glv | bash
 ```
 
 ### How to use
 
-Run command `glv`, that's all.
-
-https://user-images.githubusercontent.com/535675/117602770-16211b80-b184-11eb-8c4a-5009c0bce50d.mov
+```
+Usage: glv [OPTION]...
+Options:
+  -i, --install      Install/Update Golang
+  -s, --setgopath    Set GOPATH
+  -h, --help         Show help information
+  -v, --version      Show GLV version
+```
 
 ### How to Collaborate
 
