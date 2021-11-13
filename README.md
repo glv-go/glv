@@ -2,6 +2,10 @@
 
 Golang Latest Version
 
+### Intro
+
+`glv` is a simple bash script to manage Go versions and GOPATH settings.
+
 ### Install
 
 ```
