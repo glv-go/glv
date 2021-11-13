@@ -86,7 +86,6 @@ opt_golang(){
 }
 
 set_gopath() {
-  #检查是否已经安装golang，如果已经安装则继续操作，否则提示安装golang
   if golang_is_installed; then
     local GOPATH=$(go env GOPATH)
     echo "Current GOPATH: ${GOPATH}"
