@@ -1,84 +1,110 @@
 #!/usr/bin/env bash
 #
-# Golang Latest Version
-# Install
+# Golang Latest Version Manager
 # Should work on sh, dash, bash, ksh, zsh
 #
-# Copyright (C) 2021-present, Implemented by Bin HUA <code@tourcoder.com>
+# Copyright (C) 2021-present, Implemented by Bin Hua <forhua@gmail.com>
 
-main(){
-  if  [[ $(command -v glv) ]]; then
-    if ! [[ $(command -v git) ]]; then
-    echo -e "Need to install Git :)
-************************************ 
-Debian/Ubuntu: apt-get install git
-macOS: brew install git
-RedHat/CentOS: yum install git
-************************************" && exit 1
-    fi
-    remote_goversion=`git ls-remote --tags https://github.com/golang/go.git | awk '{print $2}' | awk -F"/" '{print $3}' | grep -v "weekly\|rc\|beta\|release" | sort -n -t "." -k2 -k3 | tail -n 1`
-    if [[ "$(uname)" = "Darwin" ]] ;then
-      currenttype="darwin-amd64"
-    elif [[ "$(uname)" = "Linux" ]]; then
-      if [[ "$(getconf LONG_BIT)" = "64" ]]; then
-        currenttype="linux-amd64"
-      else
-        currenttype="linux-386"
-      fi
-    elif [[ "$(uname)" = "MINGW32_NT" ]]; then
-      echo -e "Please go to https://golang.org/dl/" && exit 1
-    else
-      echo -e "System unsupported" && exit 1
-    fi
-    if ! [[ $(command -v go) ]]; then
-      curl -LO https://golang.org/dl/${remote_goversion}.${currenttype}.tar.gz
-      sudo tar -C /usr/local -zxf ${remote_goversion}.${currenttype}.tar.gz
-      rm ${remote_goversion}.${currenttype}.tar.gz
-      EXPORTSCRITP="export PATH=\$PATH:/usr/local/go/bin"
-      currentshell=$(ps -p $PPID -o comm=)
-      if [ "${currentshell}" == "-zsh" -o "${currentshell}" == "zsh" ]; then
-        echo "${EXPORTSCRITP}">>~/.zshrc
-        echo -e "Golang installed, it is recommended to close and reopen the terminal" && exit 1
-      elif [ "${currentshell}" == "-bash" -o "${currentshell}" == "bash" ]; then
-        echo "${EXPORTSCRITP}">>~/.bashrc
-        echo -e "Golang installed, it is recommended to close and reopen the terminal" && exit 1
-      else
-        echo -e "Golang installed, append the following to your shell profile\\nexport PATH=\$PATH:/usr/local/go/bin" && exit 1
-      fi
-    else
-      local_goversion=$(go version | awk '{print $3}')
-    	if [[ "${local_goversion}" = "${remote_goversion}" ]]; then 
-	      echo -e "The latest version ${local_goversion} is already installed on your system" && exit 1
-      else
-        echo -e "Local version: ${local_goversion}"
-        echo -e "Latest version: ${remote_goversion}"
-        read -p "Do you want to update? (y/N): " yN
-        if [[ "${yN}" = "y" ]]; then
-          if [ -d "/usr/local/go" ]; then
-            curl -LO https://golang.org/dl/${remote_goversion}.${currenttype}.tar.gz
-            sudo mv /usr/local/go /usr/local/${local_goversion}
-            sudo tar -C /usr/local -zxf ${remote_goversion}.${currenttype}.tar.gz
-            rm ${remote_goversion}.${currenttype}.tar.gz
-            currentshell=$(ps -p $PPID -o comm=)
-            if [ "${currentshell}" == "-zsh" -o "${currentshell}" == "zsh" ]; then
-              echo "${EXPORTSCRITP}">>~/.zshrc
-              echo -e "Golang updated, it is recommended to close and reopen the terminal" && exit 1
-            elif [ "${currentshell}" == "-bash" -o "${currentshell}" == "bash" ]; then
-              echo "${EXPORTSCRITP}">>~/.bashrc
-              echo -e "Golang updated, it is recommended to close and reopen the terminal" && exit 1
-            else
-              echo -e "Golang updated, append the following to your shell profile\\nexport PATH=\$PATH:/usr/local/go/bin" && exit 1
-            fi
-          fi
-        else
-          echo -e "Golang update cancelled" && exit 1
-        fi
-    	fi
-    fi 
+golang_version_remote() {
+  curl -s https://golang.org/VERSION?m=text | sed -e 's/^go//'
+}
+
+golang_version_local() {
+  go version | awk '{print $3}' | sed -e 's/go//'
+}
+
+golang_is_installed() {
+  if [[ $(command -v go) ]]; then
+    return 0
   else
-    cp glv /usr/local/bin/glv
-    echo -e "glv installed, just run \`glv\`" && exit 1
+    return 1
   fi
 }
 
-main
+system_type() {
+  if [[ "$(uname)" = "Darwin" ]] ;then
+      echo "darwin-amd64"
+  elif [[ "$(uname)" = "Linux" ]]; then
+    if [[ "$(getconf LONG_BIT)" = "64" ]]; then
+      echo "linux-amd64"
+    else
+      echo "linux-386"
+    fi
+  elif [[ "$(uname)" = "MINGW32_NT" ]]; then
+    echo -e "Please go to https://golang.org/dl/" && exit 1
+  else
+    echo -e "System unsupported" && exit 1
+  fi
+}
+
+golang_version_file() {
+  curl -LO https://golang.org/dl/$(golang_version_remote).$(system_type).tar.gz
+}
+
+current_shell_type() {
+  
+}
+
+opt_golang(){
+  golang_version_file
+  if golang_is_installed; then
+    echo "golang is installed"
+  else
+    echo "golang is not installed"
+    echo "downloading golang"
+  fi
+}
+
+set_gopath() {
+  echo "hello1"
+}
+
+glv_version() {
+  echo "v0.1.1"
+}
+
+glv_help() {
+  echo
+  echo "Golang Latest Version Manager ($(glv_version))"
+  echo
+  echo "Usage: glv [OPTION]..."
+  echo "Options:"
+  echo "  -i, --install      Install/Update Golang"
+  echo "  -s, --setgopath    Set GOPATH"
+  echo "  -h, --help         Show help information"
+  echo "  -v, --version      Show GLV version"
+  echo
+}
+
+main(){
+  if  [[ $(command -v glv) ]]; then
+    case $1 in
+      -i|--install)
+        opt_golang
+        exit 0
+        ;;
+      -s|--setgopath)
+        set_gopath
+        exit 0
+        ;;
+      -h|--help)
+        glv_help
+        exit 0
+        ;;
+      -v|--version)
+        echo $(glv_version)
+        exit 0
+        ;;
+      *)
+        glv_help
+        exit 1
+        ;;
+    esac
+  else
+    sudo curl -sL https://raw.githubusercontent.com/tourcoder/glv/master/glv -o /usr/local/bin/glv
+    sudo chmod +x /usr/local/bin/glv
+    echo -e "glv installed, just run 'glv --help'" && exit 1
+  fi
+}
+
+main $1
