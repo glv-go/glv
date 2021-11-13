@@ -86,15 +86,20 @@ opt_golang(){
 }
 
 set_gopath() {
-  local GOPATH=$(go env GOPATH)
-  echo "Current GOPATH: ${GOPATH}"
-  read -p "Do you want to change GOPATH? (y/N): " answer
-  if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
-    read -p "Enter the new GOPATH: " new_gopath
-    go env -w GOPATH=$new_gopath
-    echo "GOPATH has been changed to: ${new_gopath}, run 'go env' to check"
+  #检查是否已经安装golang，如果已经安装则继续操作，否则提示安装golang
+  if golang_is_installed; then
+    local GOPATH=$(go env GOPATH)
+    echo "Current GOPATH: ${GOPATH}"
+    read -p "Do you want to change GOPATH? (y/N): " answer
+    if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
+      read -p "Enter the new GOPATH: " new_gopath
+      go env -w GOPATH=$new_gopath
+      echo "GOPATH has been changed to: ${new_gopath}, run 'go env' to check"
+    else
+      echo "GOPATH unchanged" && exit 1
+    fi
   else
-    echo "GOPATH unchanged" && exit 1
+    echo "Golang is not installed, please run 'glv -i' to install" && exit 1
   fi
 }
 
