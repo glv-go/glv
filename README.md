@@ -23,6 +23,10 @@ Options:
   -v, --version      Show GLV version
 ```
 
+![](how-to-install-go.png)
+
+![](how-to-set-gopath.png)
+
 ### How to Collaborate
 
 Please feel free to submit your PR or issue.
