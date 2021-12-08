@@ -103,7 +103,7 @@ set_gopath() {
 }
 
 glv_version() {
-  echo "v0.1.1"
+  echo "v0.1.2"
 }
 
 glv_help() {
