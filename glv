@@ -3,10 +3,10 @@
 # Golang Latest Version Manager
 # Should work on sh, dash, bash, ksh, zsh
 #
-# Copyright (C) 2021-present, Implemented by Bin Hua <forhua@gmail.com>
+# Copyright (C) 2021-present, Implemented by Bin Hua <code@tourcoder.com>
 
 golang_version_remote() {
-  curl -s https://golang.org/VERSION?m=text | sed -e 's/^go//'
+  curl -s https://go.dev/VERSION?m=text | sed -e 's/^go//'
 }
 
 golang_version_local() {
@@ -31,14 +31,14 @@ system_type() {
       echo "linux-386"
     fi
   elif [[ "$(uname)" = "MINGW32_NT" ]]; then
-    echo -e "Please go to https://golang.org/dl/" && exit 1
+    echo -e "Please go to https://go.dev/dl/" && exit 1
   else
     echo -e "System unsupported" && exit 1
   fi
 }
 
 golang_version_file() {
-  curl -LO https://golang.org/dl/go$(golang_version_remote).$(system_type).tar.gz
+  curl -LO https://go.dev/dl/go$(golang_version_remote).$(system_type).tar.gz
 }
 
 export_path_to_current_shell() {
