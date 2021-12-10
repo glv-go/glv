@@ -103,7 +103,29 @@ set_gopath() {
 }
 
 glv_version() {
-  echo "v0.1.2"
+  echo "v0.1.3"
+}
+
+glv_version_local() {
+  glv --version
+}
+
+opt_glv() {
+  if [[ $(glv_version_local) == $(glv_version) ]]; then
+    echo "The latest version ($(glv_version)) of glv is already installed on your system" 
+  else
+    echo "GLV Local version: $(glv_version_local)"
+    echo "GLV Latest version: $(glv_version)"
+    read -p "Do you want to update? (y/N): " answer
+    if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
+      echo "Updating..."
+      sudo curl -sL https://raw.githubusercontent.com/glv-go/glv/master/glv -o /usr/local/bin/glv
+      sudo chmod +x /usr/local/bin/glv
+      echo -e "glv updated..." && exit 0
+    else
+      echo -e "glv update cancelled" && exit 1
+    fi
+  fi
 }
 
 glv_help() {
@@ -138,13 +160,18 @@ main(){
         echo $(glv_version)
         exit 0
         ;;
+      -u|--upgrade)
+        opt_glv
+        exit 0
+        ;;
       *)
+        opt_glv
         glv_help
         exit 1
         ;;
     esac
   else
-    sudo curl -sL https://raw.githubusercontent.com/tourcoder/glv/master/glv -o /usr/local/bin/glv
+    sudo curl -sL https://raw.githubusercontent.com/glv-go/glv/master/glv -o /usr/local/bin/glv
     sudo chmod +x /usr/local/bin/glv
     echo "glv installed, just run 'glv --help'" && exit 1
   fi
