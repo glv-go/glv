@@ -21,6 +21,7 @@ Options:
   -s, --setgopath    Set GOPATH
   -h, --help         Show help information
   -v, --version      Show GLV version
+  -u, --upgrade      Upgrade GLV to latest version
 ```
 
 ![](how-to-install-go.png)
