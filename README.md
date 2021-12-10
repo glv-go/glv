@@ -9,7 +9,7 @@ Golang Latest Version
 ### Install
 
 ```
-curl https://raw.githubusercontent.com/tourcoder/glv/master/glv | bash
+curl https://raw.githubusercontent.com/glv-go/glv/master/glv | bash
 ```
 
 ### How to use
