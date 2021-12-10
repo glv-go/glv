@@ -112,7 +112,7 @@ glv_version_local() {
 
 opt_glv() {
   if [[ $(glv_version_local) == $(glv_version) ]]; then
-    echo "The latest version ($(glv_version)) of glv is already installed on your system" 
+    glv_help
   else
     echo "GLV Local version: $(glv_version_local)"
     echo "GLV Latest version: $(glv_version)"
@@ -138,6 +138,7 @@ glv_help() {
   echo "  -s, --setgopath    Set GOPATH"
   echo "  -h, --help         Show help information"
   echo "  -v, --version      Show GLV version"
+  echo "  -u, --upgrade      Upgrade GLV to latest version"
   echo
 }
 
@@ -166,7 +167,6 @@ main(){
         ;;
       *)
         opt_glv
-        glv_help
         exit 1
         ;;
     esac
