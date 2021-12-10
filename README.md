@@ -9,7 +9,7 @@ Golang Latest Version
 ### Install
 
 ```
-curl https://raw.githubusercontent.com/tourcoder/glv/master/glv | bash
+curl https://raw.githubusercontent.com/glv-go/glv/master/glv | bash
 ```
 
 ### How to use
@@ -21,6 +21,7 @@ Options:
   -s, --setgopath    Set GOPATH
   -h, --help         Show help information
   -v, --version      Show GLV version
+  -u, --upgrade      Upgrade GLV to latest version
 ```
 
 ![](how-to-install-go.png)
