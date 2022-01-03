@@ -123,16 +123,20 @@ glv_version() {
   echo "v0.1.4"
 }
 
+glv_remote_version() {
+  curl -s "https://api.github.com/repos/glv-go/glv/releases" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | awk 'NR==1'
+}
+
 glv_version_local() {
   glv --version
 }
 
 opt_glv() {
-  if [[ $(glv_version_local) == $(glv_version) ]]; then
+  if [[ $(glv_version_local) == $(glv_remote_version) ]]; then
     glv_help
   else
     echo "GLV Local version: $(glv_version_local)"
-    echo "GLV Latest version: $(glv_version)"
+    echo "GLV Latest version: $(glv_remote_version)"
     read -p "Do you want to update? (y/N): " answer
     if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
       echo "Updating..."
