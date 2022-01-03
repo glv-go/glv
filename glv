@@ -102,8 +102,25 @@ set_gopath() {
   fi
 }
 
+set_gomodcache() {
+  if golang_is_installed; then
+    local GOMODCACHE=$(go env GOMODCACHE)
+    echo "Current GOMODCACHE: ${GOMODCACHE}"
+    read -p "Do you want to change GOMODCACHE? (y/N): " answer
+    if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
+      read -p "Enter the new GOMODCACHE: " new_gomodcache
+      go env -w GOMODCACHE=$new_gomodcache
+      echo "GOMODCACHE has been changed to: ${new_gomodcache}, run 'go env' to check"
+    else
+      echo "GOMODCACHE unchanged" && exit 1
+    fi
+  else
+    echo "Golang is not installed, please run 'glv -i' to install" && exit 1
+  fi
+}
+
 glv_version() {
-  echo "v0.1.3"
+  echo "v0.1.4"
 }
 
 glv_version_local() {
@@ -134,11 +151,12 @@ glv_help() {
   echo
   echo "Usage: glv [OPTION]..."
   echo "Options:"
-  echo "  -i, --install      Install/Update Golang"
-  echo "  -s, --setgopath    Set GOPATH"
-  echo "  -h, --help         Show help information"
-  echo "  -v, --version      Show GLV version"
-  echo "  -u, --upgrade      Upgrade GLV to latest version"
+  echo "  -i, --install       Install/Update Golang"
+  echo "  -s, --setgopath     Set GOPATH"
+  echo "  -sc,--setgomodcache Set GOMODCACHE"
+  echo "  -h, --help          Show help information"
+  echo "  -v, --version       Show GLV version"
+  echo "  -u, --upgrade       Upgrade GLV to latest version"
   echo
 }
 
@@ -151,6 +169,10 @@ main(){
         ;;
       -s|--setgopath)
         set_gopath
+        exit 0
+        ;;
+      -sc|--setgomodcache)
+        set_gomodcache
         exit 0
         ;;
       -h|--help)
