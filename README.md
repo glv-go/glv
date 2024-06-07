@@ -1,6 +1,6 @@
 # GLV
 
-Golang Latest Version
+Golang Latest Version Manager
 
 ### Intro
 
