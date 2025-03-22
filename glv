@@ -47,9 +47,24 @@ export_path_to_current_shell() {
   elif [ "${currentshell}" == "-bash" -o "${currentshell}" == "bash" ]; then
     echo "${EXPORTSCRITP}">>~/.bashrc
   else
-    echo -e "${EXPORTSCRIPT}"
+    echo -e "${EXPORTSCRITP}"
   fi
   echo "Done, append the following to your shell profile\\nexport PATH=\$PATH:/usr/local/go/bin" && exit 1
+}
+
+check_and_create_directory() {
+  # Ensure the directory exists, create it if not
+  if [ ! -d "/usr/local/bin" ]; then
+    echo "Directory /usr/local/bin does not exist. Creating it now..."
+    sudo mkdir -p /usr/local/bin
+    sudo chown $(whoami) /usr/local/bin
+  fi
+
+  # Ensure the directory is writable
+  if [ ! -w "/usr/local/bin" ]; then
+    echo -e "${RED}Error: /usr/local/bin is not writable. Please check permissions.${NC}"
+    exit 1
+  fi
 }
 
 opt_golang(){
@@ -76,6 +91,7 @@ opt_golang(){
     echo "Installing..."
     cd /tmp
     golang_version_file
+    check_and_create_directory
     sudo tar -C /usr/local -zxf go$(golang_version_remote).$(system_type).tar.gz
     rm -rf go$(golang_version_remote).$(system_type).tar.gz
     export_path_to_current_shell
@@ -137,6 +153,7 @@ opt_glv() {
     read -p "Do you want to update? (y/N): " answer
     if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
       echo "Updating..."
+      check_and_create_directory
       sudo curl -sL https://raw.githubusercontent.com/glv-go/glv/master/glv -o /usr/local/bin/glv
       sudo chmod +x /usr/local/bin/glv
       echo -e "glv updated..." && exit 0
@@ -194,6 +211,7 @@ main(){
         ;;
     esac
   else
+    check_and_create_directory
     sudo curl -sL https://raw.githubusercontent.com/glv-go/glv/master/glv -o /usr/local/bin/glv
     sudo chmod +x /usr/local/bin/glv
     echo "glv installed, just run 'glv --help'" && exit 1
