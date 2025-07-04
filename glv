@@ -5,160 +5,254 @@
 #
 # Copyright (C) 2021-present, Implemented by Bin Hua <code@tourcoder.com>
 
+GLV_BIN_DIR="$HOME/.local/bin"
+GO_INSTALL_ROOT="$HOME/.go"
+
 golang_version_remote() {
-  curl -s https://go.dev/VERSION\?m\=text | awk -F'go' '{print $2}'
+  curl -s https://go.dev/VERSION?m=text | head -n 1 | awk -F'go' '{print $2}'
 }
 
 golang_version_local() {
-  go version | awk '{print $3}' | sed -e 's/go//'
+  if command -v go > /dev/null; then
+    go version | awk '{print $3}' | sed -e 's/go//'
+  else
+    echo "not installed"
+  fi
 }
 
 golang_is_installed() {
-  command -v go > /dev/null
+  [ -x "$(command -v go)" ]
+}
+
+glv_is_installed() {
+  [ -x "$(command -v glv)" ]
+}
+
+system_info() {
+  echo "$(uname -s) $(uname -m)"
 }
 
 system_type() {
-  case "$(uname)" in
-    "Darwin")
-      echo "darwin-amd64"
+  local os=$(uname -s)
+  local arch=$(uname -m)
+  local go_arch
+
+  case "$arch" in
+    "x86_64")
+      go_arch="amd64"
       ;;
-    "Linux")
-      if [ "$(getconf LONG_BIT)" = "64" ]; then
-        echo "linux-amd64"
-      else
-        echo "linux-386"
-      fi
+    "arm64" | "aarch64")
+      go_arch="arm64"
+      ;;
+    "i386" | "i686")
+      go_arch="386"
       ;;
     *)
-      echo "System unsupported, please download and install manually. https://go.dev/dl/" && exit 1
+      go_arch=""
       ;;
+  esac
+
+  case "$os" in
+    "Linux")
+      if [ -n "$go_arch" ]; then
+        echo "linux-${go_arch}"
+      else
+        echo "" # Unsupported arch
+      fi
+      ;;
+    "Darwin")
+      if [ -n "$go_arch" ]; then
+        echo "darwin-${go_arch}"
+      else
+        echo "" # Unsupported arch
+      fi
+      ;;
+    "MINGW*|MSYS*|CYGWIN*")
+      if [ -n "$go_arch" ]; then
+        echo "windows-${go_arch}"
+      else
+        echo "" # Unsupported arch
+      fi
+      ;;
+    *) 
+      echo "" # Unsupported OS
   esac
 }
 
-golang_version_file() {
-  curl -LO https://go.dev/dl/go$(golang_version_remote).$(system_type).tar.gz
-}
-
 export_path_to_current_shell() {
-  local EXPORTSCRITP="export PATH=\$PATH:/usr/local/go/bin"
-  local currentshell=$(ps -p $PPID -o comm=)
-  if [ "${currentshell}" == "-zsh" -o "${currentshell}" == "zsh" ]; then
-    echo "${EXPORTSCRITP}">>~/.zshrc
-  elif [ "${currentshell}" == "-bash" -o "${currentshell}" == "bash" ]; then
-    echo "${EXPORTSCRITP}">>~/.bashrc
+  local EXPORTSCRIPT="export PATH=\"$GLV_BIN_DIR:\$PATH\"" 
+  local profile_file
+
+  if [[ ":$PATH:" != *":$GLV_BIN_DIR:"* ]]; then
+    case "$(basename "$SHELL")" in
+      "zsh")
+        profile_file="$HOME/.zshrc"
+        ;;
+      "bash")
+        profile_file="$HOME/.bashrc"
+        ;;
+      *)
+        echo "Done. Please add the following line to your shell's profile file:"
+        echo "$EXPORTSCRIPT"
+        return
+        ;;
+    esac
+
+    echo "Appending PATH to $profile_file..."
+    echo "" >> "$profile_file"
+    echo "# GLV" >> "$profile_file"
+    echo "$EXPORTSCRIPT" >> "$profile_file"
+    echo "Done. Please restart your shell or run 'source $profile_file' to apply changes."
   else
-    echo -e "${EXPORTSCRITP}"
+    echo "PATH already includes $GLV_BIN_DIR. No changes made."
   fi
-  echo "Done, append the following to your shell profile\\nexport PATH=\$PATH:/usr/local/go/bin" && exit 1
 }
 
-check_and_create_directory() {
-  # Ensure the directory exists, create it if not
-  if [ ! -d "/usr/local/bin" ]; then
-    echo "Directory /usr/local/bin does not exist. Creating it now..."
-    sudo mkdir -p /usr/local/bin
-    sudo chown $(whoami) /usr/local/bin
-  fi
+check_and_create_directories() {
+  mkdir -p "$GLV_BIN_DIR"
+  mkdir -p "$GO_INSTALL_ROOT"
+}
 
-  # Ensure the directory is writable
-  if [ ! -w "/usr/local/bin" ]; then
-    echo -e "${RED}Error: /usr/local/bin is not writable. Please check permissions.${NC}"
+opt_golang() {
+  local latest_version=$(golang_version_remote)
+  local local_version=$(golang_version_local)
+  local sys_type=$(system_type)
+  local go_pkg_name="go${latest_version}.${sys_type}.tar.gz"
+
+  if [ -z "$sys_type" ]; then
+    echo "System unsupported, please download and install manually from https://go.dev/dl/"
     exit 1
   fi
-}
 
-opt_golang(){
-  if golang_is_installed; then
-    if [[ $(golang_version_local) == $(golang_version_remote) ]]; then
-      echo "The latest version ($(golang_version_local)) is already installed on your system" 
-    else
-      echo "Local version: $(golang_version_local)"
-      echo "Latest version: $(golang_version_remote)"
-      read -p "Do you want to update? (y/N): " answer
-      if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
-        echo "Updating..."
-        cd /tmp
-        golang_version_file
-        sudo mv /usr/local/go /usr/local/go$(golang_version_local)
-        sudo tar -C /usr/local -zxf go$(golang_version_remote).$(system_type).tar.gz
-        rm -rf go$(golang_version_remote).$(system_type).tar.gz
-        export_path_to_current_shell
-      else
-        echo -e "Golang update cancelled" && exit 1
-      fi
-    fi
-  else
-    echo "Installing..."
-    cd /tmp
-    golang_version_file
-    check_and_create_directory
-    sudo tar -C /usr/local -zxf go$(golang_version_remote).$(system_type).tar.gz
-    rm -rf go$(golang_version_remote).$(system_type).tar.gz
-    export_path_to_current_shell
+  if golang_is_installed && [ "$local_version" = "$latest_version" ]; then
+    echo "The latest version ($latest_version) is already installed."
+    exit 0
   fi
+
+  echo "> Your system: $(system_info)"
+  echo "  Suggestion: ${go_pkg_name}"
+  read -p "  Continue? (Y/n) " answer
+
+  if [[ "$answer" =~ ^[nN]$ ]]; then
+    echo "Installation cancelled. You can also download installer from https://go.dev/dl/"
+    exit 1
+  fi
+
+  if golang_is_installed; then
+    echo "Updating Go from $local_version to $latest_version..."
+  else
+    echo "Installing Go $latest_version..."
+  fi
+
+  cd /tmp
+  echo "Downloading ${go_pkg_name}..."
+  if ! curl -fLO "https://go.dev/dl/${go_pkg_name}"; then
+    echo "Failed to download Go. Please check your network or the version."
+    exit 1
+  fi
+
+  local new_go_dir="$GO_INSTALL_ROOT/go_current"
+  mv "$new_go_dir" "$GO_INSTALL_ROOT/go_${local_version}"
+
+  echo "Extracting archive..."
+  tar -C "$GO_INSTALL_ROOT" -zxf "$go_pkg_name"
+  mv "$GO_INSTALL_ROOT/go" "$new_go_dir"
+
+  echo "Cleaning up..."
+  rm -f "$go_pkg_name"
+
+  echo "Switching to new version..."
+
+  local export_line="export PATH=\"$new_go_dir/bin:\$PATH\""
+
+  if [[ ":$PATH:" != *":$new_go_dir/bin:"* ]]; then 
+    case "$(basename "$SHELL")" in
+      "zsh")
+        profile_file="$HOME/.zshrc"
+        ;;
+      "bash")
+        profile_file="$HOME/.bashrc"
+        ;;
+      *)
+        echo "Done. Please add the following line to your shell's profile file:"
+        echo "  $export_line"
+        return 0
+        ;;
+    esac
+
+    if grep -Fxq "$export_line" "$profile_file"; then
+      echo "PATH update already exists in $profile_file"
+    else
+      echo "$export_line" >> "$profile_file"
+      echo "Added Go path to $profile_file"
+    fi
+  fi
+
+  echo "Go ${latest_version} has been installed successfully! Please restart your shell or run 'source $profile_file' to apply changes."
 }
 
 set_gopath() {
-  if golang_is_installed; then
-    local GOPATH=$(go env GOPATH)
-    echo "Current GOPATH: ${GOPATH}"
-    read -p "Do you want to change GOPATH? (y/N): " answer
-    if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
-      read -p "Enter the new GOPATH: " new_gopath
-      go env -w GOPATH=$new_gopath
-      echo "GOPATH has been changed to: ${new_gopath}, run 'go env' to check"
-    else
-      echo "GOPATH unchanged" && exit 1
-    fi
+  if ! golang_is_installed; then
+    echo "Golang is not installed. Please run 'glv -i' to install." && exit 1
+  fi
+  local GOPATH=$("$GO_INSTALL_ROOT/go_current/bin/go" env GOPATH)
+  echo "Current GOPATH: ${GOPATH}"
+  read -p "Do you want to change GOPATH? (y/N): " answer
+  if [[ "$answer" =~ ^[yY]$ ]]; then
+    read -p "Enter the new GOPATH: " new_gopath
+    "$GO_INSTALL_ROOT/go_current/bin/go" env -w GOPATH="$new_gopath"
+    echo "GOPATH has been changed to: $new_gopath"
   else
-    echo "Golang is not installed, please run 'glv -i' to install" && exit 1
+    echo "GOPATH unchanged."
   fi
 }
 
 set_gomodcache() {
-  if golang_is_installed; then
-    local GOMODCACHE=$(go env GOMODCACHE)
-    echo "Current GOMODCACHE: ${GOMODCACHE}"
-    read -p "Do you want to change GOMODCACHE? (y/N): " answer
-    if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
-      read -p "Enter the new GOMODCACHE: " new_gomodcache
-      go env -w GOMODCACHE=$new_gomodcache
-      echo "GOMODCACHE has been changed to: ${new_gomodcache}, run 'go env' to check"
-    else
-      echo "GOMODCACHE unchanged" && exit 1
-    fi
+  if ! golang_is_installed; then
+    echo "Golang is not installed. Please run 'glv -i' to install." && exit 1
+  fi
+  local GOMODCACHE=$("$GO_INSTALL_ROOT/go_current/bin/go" env GOMODCACHE)
+  echo "Current GOMODCACHE: ${GOMODCACHE}"
+  read -p "Do you want to change GOMODCACHE? (y/N): " answer
+  if [[ "$answer" =~ ^[yY]$ ]]; then
+    read -p "Enter the new GOMODCACHE: " new_gomodcache
+    "$GO_INSTALL_ROOT/go_current/bin/go" env -w GOMODCACHE="$new_gomodcache"
+    echo "GOMODCACHE has been changed to: $new_gomodcache"
   else
-    echo "Golang is not installed, please run 'glv -i' to install" && exit 1
+    echo "GOMODCACHE unchanged."
   fi
 }
 
 glv_version() {
-  echo "v0.1.5"
+  echo "v0.2.0" //bump version
 }
 
 glv_remote_version() {
-  curl -s "https://api.github.com/repos/glv-go/glv/releases" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | awk 'NR==1'
-}
-
-glv_version_local() {
-  glv --version
+  curl -s "https://api.github.com/repos/glv-go/glv/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'
 }
 
 opt_glv() {
-  if [[ $(glv_version_local) == $(glv_remote_version) ]]; then
+  local local_v=$(glv_version)
+  local remote_v=$(glv_remote_version)
+  if [ "$local_v" = "$remote_v" ]; then
+    echo "Your glv version ($local_v) is up to date."
     glv_help
   else
-    echo "GLV Local version: $(glv_version_local)"
-    echo "GLV Latest version: $(glv_remote_version)"
-    read -p "Do you want to update? (y/N): " answer
-    if [[ "${answer}" == "Y" ]] || [[ "${answer}" == "y" ]] || [[ "${answer}" == "" ]]; then
-      echo "Updating..."
-      check_and_create_directory
-      sudo curl -sL https://raw.githubusercontent.com/glv-go/glv/master/glv -o /usr/local/bin/glv
-      sudo chmod +x /usr/local/bin/glv
-      echo -e "glv updated..." && exit 0
+    echo "GLV Local version: $local_v"
+    echo "GLV Latest version: $remote_v"
+    read -p "Do you want to upgrade glv? (y/N): " answer
+    if [[ "$answer" =~ ^[yY]$ ]]; then
+      echo "Upgrading glv..."
+      check_and_create_directories
+      if curl -sL https://raw.githubusercontent.com/glv-go/glv/master/glv -o "$GLV_BIN_DIR/glv"; then
+        chmod +x "$GLV_BIN_DIR/glv"
+        export_path_to_current_shell
+        echo "glv has been upgraded. Please start a new shell session."
+      else
+        echo "Upgrade failed."
+      fi
     else
-      echo -e "glv update cancelled" && exit 1
+      echo "glv upgrade cancelled."
     fi
   fi
 }
@@ -166,56 +260,45 @@ opt_glv() {
 glv_help() {
   echo
   echo "Golang Latest Version Manager ($(glv_version))"
+  echo "Manages Go installation in your home directory ($GO_INSTALL_ROOT)."
   echo
   echo "Usage: glv [OPTION]..."
   echo "Options:"
-  echo "  -i, --install       Install/Update Golang"
+  echo "  -i, --install       Install or update to the latest Go version"
   echo "  -s, --setgopath     Set GOPATH"
   echo "  -sc,--setgomodcache Set GOMODCACHE"
-  echo "  -h, --help          Show help information"
-  echo "  -v, --version       Show GLV version"
-  echo "  -u, --upgrade       Upgrade GLV to latest version"
+  echo "  -h, --help          Show this help information"
+  echo "  -v, --version       Show glv version"
+  echo "  -u, --upgrade       Upgrade glv itself to the latest version"
   echo
 }
 
-main(){
-  if  [[ $(command -v glv) ]]; then
-    case $1 in
-      -i|--install)
-        opt_golang
-        exit 0
-        ;;
-      -s|--setgopath)
-        set_gopath
-        exit 0
-        ;;
-      -sc|--setgomodcache)
-        set_gomodcache
-        exit 0
-        ;;
-      -h|--help)
-        glv_help
-        exit 0
-        ;;
-      -v|--version)
-        echo $(glv_version)
-        exit 0
-        ;;
-      -u|--upgrade)
-        opt_glv
-        exit 0
-        ;;
-      *)
-        opt_glv
-        exit 1
-        ;;
-    esac
-  else
-    check_and_create_directory
-    sudo curl -sL https://raw.githubusercontent.com/glv-go/glv/master/glv -o /usr/local/bin/glv
-    sudo chmod +x /usr/local/bin/glv
-    echo "glv installed, just run 'glv --help'" && exit 1
+main() {
+  if ! command -v glv > /dev/null && [ ! -x "$GLV_BIN_DIR/glv" ]; then
+      echo "Installing glv for the first time..."
+      check_and_create_directories
+      cp "$0" "$GLV_BIN_DIR/glv"
+      chmod +x "$GLV_BIN_DIR/glv"
+      export_path_to_current_shell
+      echo "glv has been installed to $GLV_BIN_DIR/glv"
+      echo "Please run 'glv --help' in a new shell session."
+      exit 0
   fi
+
+  case $1 in
+    -i|--install) opt_golang ;;
+    -s|--setgopath) set_gopath ;;
+    -sc|--setgomodcache) set_gomodcache ;;
+    -h|--help) glv_help ;;
+    -v|--version) glv_version ;;
+    -u|--upgrade) opt_glv ;;
+    "") opt_glv ;;
+    *)
+      echo "Invalid option: $1"
+      glv_help
+      exit 1
+      ;;
+  esac
 }
 
-main $1
+main "$@"
