@@ -224,7 +224,7 @@ set_gomodcache() {
 }
 
 glv_version() {
-  echo "v0.2.0" //bump version
+  echo "v0.2.0"
 }
 
 glv_remote_version() {
