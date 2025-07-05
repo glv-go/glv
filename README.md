@@ -11,6 +11,12 @@ Golang Latest Version Manager
 > **Note:** The structure has been updated. If you're using version 0.1.5 or earlier, please upgrade using the command below.
 
 ```
+curl https://glv.pages.dev/glv | bash
+```
+
+**Backup**
+
+```
 curl https://raw.githubusercontent.com/glv-go/glv/master/glv | bash
 ```
 
