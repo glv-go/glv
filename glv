@@ -263,7 +263,6 @@ opt_glv() {
 glv_help() {
   echo
   echo "Golang Latest Version Manager ($GLV_VERSION)"
-  echo "Manages Go installation in your home directory ($GO_INSTALL_ROOT)."
   echo
   echo "Usage: glv [OPTION]..."
   echo "Options:"
