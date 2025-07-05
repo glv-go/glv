@@ -3,8 +3,7 @@
 # generate-release-version
 # Copyright (C) 2021-present, Implemented by Bin Hua <code@tourcoder.com>
 
-OUTPUT_DIR="public"
-mkdir -p $OUTPUT_DIR
+OUTPUT_DIR="."
 
 LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
 
