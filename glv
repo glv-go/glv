@@ -5,6 +5,7 @@
 #
 # Copyright (C) 2021-present, Implemented by Bin Hua <code@tourcoder.com>
 
+GLV_VERSION="v0.2.0"
 GLV_BIN_DIR="$HOME/.local/bin"
 GO_INSTALL_ROOT="$HOME/.go"
 
@@ -223,16 +224,16 @@ set_gomodcache() {
   fi
 }
 
-glv_version() {
-  echo "v0.2.0"
+glv_installed_version() {
+  command glv --version 2>/dev/null || echo "none"
 }
 
 glv_remote_version() {
-  curl -s "https://api.github.com/repos/glv-go/glv/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'
+  curl -s https://glv.pages.dev/VERSION?m=text | head -n 1
 }
 
 opt_glv() {
-  local local_v=$(glv_version)
+  local local_v=$(glv_installed_version)
   local remote_v=$(glv_remote_version)
   if [ "$local_v" = "$remote_v" ]; then
     echo "Your glv version ($local_v) is up to date."
@@ -259,7 +260,7 @@ opt_glv() {
 
 glv_help() {
   echo
-  echo "Golang Latest Version Manager ($(glv_version))"
+  echo "Golang Latest Version Manager ($(GLV_VERSION))"
   echo "Manages Go installation in your home directory ($GO_INSTALL_ROOT)."
   echo
   echo "Usage: glv [OPTION]..."
@@ -290,7 +291,7 @@ main() {
     -s|--setgopath) set_gopath ;;
     -sc|--setgomodcache) set_gomodcache ;;
     -h|--help) glv_help ;;
-    -v|--version) glv_version ;;
+    -v|--version) GLV_VERSION ;;
     -u|--upgrade) opt_glv ;;
     "") opt_glv ;;
     *)
