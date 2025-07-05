@@ -5,7 +5,7 @@
 #
 # Copyright (C) 2021-present, Implemented by Bin Hua <code@tourcoder.com>
 
-GLV_VERSION="v0.2.0"
+GLV_VERSION="v0.2.1"
 GLV_BIN_DIR="$HOME/.local/bin"
 GO_INSTALL_ROOT="$HOME/.go"
 
