@@ -153,7 +153,9 @@ opt_golang() {
   fi
 
   local new_go_dir="$GO_INSTALL_ROOT/go_current"
-  mv "$new_go_dir" "$GO_INSTALL_ROOT/go_${local_version}"
+  if [ -d "$new_go_dir" ]; then
+    mv "$new_go_dir" "$GO_INSTALL_ROOT/go_${local_version}"
+  fi
 
   echo "Extracting archive..."
   tar -C "$GO_INSTALL_ROOT" -zxf "$go_pkg_name"
@@ -241,11 +243,11 @@ opt_glv() {
   else
     echo "GLV Local version: $local_v"
     echo "GLV Latest version: $remote_v"
-    read -p "Do you want to upgrade glv? (y/N): " answer
+    read -p "Do you want to upgrade glv? (y/N): " answer < /dev/tty
     if [[ "$answer" =~ ^[yY]$ ]]; then
       echo "Upgrading glv..."
       check_and_create_directories
-      if curl -sL https://raw.githubusercontent.com/glv-go/glv/master/glv -o "$GLV_BIN_DIR/glv"; then
+      if curl -sL https://glv.pages.dev/glv -o "$GLV_BIN_DIR/glv"; then
         chmod +x "$GLV_BIN_DIR/glv"
         export_path_to_current_shell
         echo "glv has been upgraded. Please start a new shell session."
@@ -260,7 +262,7 @@ opt_glv() {
 
 glv_help() {
   echo
-  echo "Golang Latest Version Manager ($(GLV_VERSION))"
+  echo "Golang Latest Version Manager ($GLV_VERSION)"
   echo "Manages Go installation in your home directory ($GO_INSTALL_ROOT)."
   echo
   echo "Usage: glv [OPTION]..."
@@ -278,7 +280,7 @@ main() {
   if ! command -v glv > /dev/null && [ ! -x "$GLV_BIN_DIR/glv" ]; then
       echo "Installing glv for the first time..."
       check_and_create_directories
-      cp "$0" "$GLV_BIN_DIR/glv"
+      curl -sL https://glv.pages.dev/glv -o "$GLV_BIN_DIR/glv"
       chmod +x "$GLV_BIN_DIR/glv"
       export_path_to_current_shell
       echo "glv has been installed to $GLV_BIN_DIR/glv"
@@ -291,7 +293,7 @@ main() {
     -s|--setgopath) set_gopath ;;
     -sc|--setgomodcache) set_gomodcache ;;
     -h|--help) glv_help ;;
-    -v|--version) GLV_VERSION ;;
+    -v|--version) echo "$GLV_VERSION" ;;
     -u|--upgrade) opt_glv ;;
     "") opt_glv ;;
     *)
