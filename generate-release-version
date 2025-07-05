@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# generate-release-version
+# Copyright (C) 2021-present, Implemented by Bin Hua <code@tourcoder.com>
+
+OUTPUT_DIR="public"
+mkdir -p $OUTPUT_DIR
+
+LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
+
+if [ -z "$LATEST_TAG" ]; then
+    VERSION_STRING=$(git rev-parse --short HEAD)
+    TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+else
+    VERSION_STRING=$LATEST_TAG
+    TIMESTAMP=$(git log -1 --format=%cI "$LATEST_TAG")
+fi
+
+echo -e "${VERSION_STRING}\ntime: ${TIMESTAMP}" > ${OUTPUT_DIR}/VERSION
+
+echo "Generated stable release VERSION file."
+echo "Latest Official Version: ${VERSION_STRING}"
+echo "Release/Commit Time: ${TIMESTAMP}"
