@@ -229,7 +229,7 @@ glv_installed_version() {
 }
 
 glv_remote_version() {
-  curl -s https://glv.pages.dev/VERSION?m=text | head -n 1
+  curl -s https://glv.pages.dev/VERSION | head -n 1
 }
 
 opt_glv() {
