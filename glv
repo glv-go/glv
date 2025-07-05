@@ -84,7 +84,7 @@ export_path_to_current_shell() {
   local EXPORTSCRIPT="export PATH=\"$GLV_BIN_DIR:\$PATH\"" 
   local profile_file
 
-  if [[ ":$PATH:" != *":$GLV_BIN_DIR:"* ]]; then
+  if ! grep -Fq "$EXPORTSCRIPT" "$profile_file"; then
     case "$(basename "$SHELL")" in
       "zsh")
         profile_file="$HOME/.zshrc"
@@ -105,7 +105,7 @@ export_path_to_current_shell() {
     echo "$EXPORTSCRIPT" >> "$profile_file"
     echo "Done. Please restart your shell or run 'source $profile_file' to apply changes."
   else
-    echo "PATH already includes $GLV_BIN_DIR. No changes made."
+    echo "PATH configuration for glv already exists in $profile_file. No changes made."
   fi
 }
 
@@ -238,6 +238,7 @@ opt_glv() {
   local local_v=$(glv_installed_version)
   local remote_v=$(glv_remote_version)
   if [ "$local_v" = "$remote_v" ]; then
+    echo 
     echo "Your glv version ($local_v) is up to date."
     glv_help
   else
