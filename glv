@@ -242,6 +242,7 @@ opt_glv() {
     echo "Your glv version ($local_v) is up to date."
     glv_help
   else
+    echo 
     echo "GLV Local version: $local_v"
     echo "GLV Latest version: $remote_v"
     read -p "Do you want to upgrade glv? (y/N): " answer < /dev/tty
